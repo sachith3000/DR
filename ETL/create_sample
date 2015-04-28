@@ -1,0 +1,49 @@
+import csv as csv
+import numpy as np
+import cv2
+
+labels_file = 'data_gray/trainLabels.csv'
+train_img_dir = 'data_gray/train/'
+test_img_dir = 'data_gray/test/'
+
+class_counts = [5,5,5,5,5]
+
+csv_file_obj = csv.reader(open(labels_file, 'rb'))
+header = csv_file_obj.next()
+
+data=[]
+for row in csv_file_obj:
+	data.append(row)
+data = np.array(data)
+
+sample = sample_files(data, class_counts)
+
+#for x in xrange(data.shape[0]):
+	
+
+def sample_files(data, class_counts):
+	np.random.shuffle(data)
+
+	zeros = data[0::,1] == '0'
+	ones = data[0::,1] == '1'
+	twos = data[0::,1] == '2'
+	threes = data[0::,1] == '3'
+	fours = data[0::,1] == '4'
+
+	zero_data = data[zeros,][0:class_counts[0],]
+	one_data = data[ones,][0:class_counts[1],]
+	two_data = data[twos,][0:class_counts[2],]
+	three_data = data[threes,][0:class_counts[3],]
+	four_data = data[fours,][0:class_counts[4],]
+
+	sample = np.concatenate((zero_data, one_data, three_data, four_data), axis=0)
+
+	return sample
+
+def get_data(sample):
+	img_file = train_img_dir + str(sample[0])
+	imag_obj = cv2.imread(img_file)
+
+	#img_obj.resize(1, 65536)
+
+	return img_obj
