@@ -1,2 +1,2 @@
 # DR
-Diabetic Retinopathy
+Diabetic Retinopathy -- Deep Learning Project
