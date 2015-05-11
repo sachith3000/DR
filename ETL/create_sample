@@ -1,49 +1,61 @@
 import csv as csv
 import numpy as np
-import cv2
+from PIL import Image
+import os
 
-labels_file = 'data_gray/trainLabels.csv'
-train_img_dir = 'data_gray/train/'
-test_img_dir = 'data_gray/test/'
-
-class_counts = [5,5,5,5,5]
-
-csv_file_obj = csv.reader(open(labels_file, 'rb'))
-header = csv_file_obj.next()
-
-data=[]
-for row in csv_file_obj:
-	data.append(row)
-data = np.array(data)
-
-sample = sample_files(data, class_counts)
-
-#for x in xrange(data.shape[0]):
+class sampler(object):
 	
+	def __init__(self):
+		self.labels_file = os.getcwd() + '/data_grey/trainLabels.csv'
+		self.train_img_dir = os.getcwd() + '/data_grey/train/'
+		self.test_img_dir = os.getcwd() + '/data_grey/test/'
 
-def sample_files(data, class_counts):
-	np.random.shuffle(data)
+	def sample_files(self):
+		np.random.shuffle(self.data)
 
-	zeros = data[0::,1] == '0'
-	ones = data[0::,1] == '1'
-	twos = data[0::,1] == '2'
-	threes = data[0::,1] == '3'
-	fours = data[0::,1] == '4'
+		zeros = self.data[0::,1] == '0'
+		ones = self.data[0::,1] == '1'
+		twos = self.data[0::,1] == '2'
+		threes = self.data[0::,1] == '3'
+		fours = self.data[0::,1] == '4'
 
-	zero_data = data[zeros,][0:class_counts[0],]
-	one_data = data[ones,][0:class_counts[1],]
-	two_data = data[twos,][0:class_counts[2],]
-	three_data = data[threes,][0:class_counts[3],]
-	four_data = data[fours,][0:class_counts[4],]
+		zero_data = self.data[zeros,][0:self.class_counts[0],]
+		one_data = self.data[ones,][0:self.class_counts[1],]
+		two_data = self.data[twos,][0:self.class_counts[2],]
+		three_data = self.data[threes,][0:self.class_counts[3],]
+		four_data = self.data[fours,][0:self.class_counts[4],]
 
-	sample = np.concatenate((zero_data, one_data, three_data, four_data), axis=0)
+		self.sample = np.concatenate((zero_data, one_data, two_data, three_data, four_data), axis=0)
 
-	return sample
+	def get_pixel_data(self, file):
+		#meh
+		im = Image.open(file)
+		pixels = list(im.getdata())
+		pixel_vals = []
+		for pixel in pixels: pixel_vals.append(pixel[0])
+		pixel_vals = np.array(pixel_vals)
 
-def get_data(sample):
-	img_file = train_img_dir + str(sample[0])
-	imag_obj = cv2.imread(img_file)
+		return pixel_vals
 
-	#img_obj.resize(1, 65536)
+	def main(self, class_counts):
+		self.class_counts = class_counts
+	
+		csv_file_obj = csv.reader(open(self.labels_file, 'rb'))
+		header = csv_file_obj.next()
 
-	return img_obj
+		self.data=[]
+		for row in csv_file_obj:
+			self.data.append(row)
+		self.data = np.array(self.data)
+
+		self.sample_files()
+
+		self.data_x = []
+		self.data_y = []
+
+		for i in xrange(self.sample.shape[0]):
+			file_name = self.train_img_dir + self.sample[i,0] + '.jpeg'
+			file_data = self.get_pixel_data(file_name)
+			file_data = np.array(file_data)
+			self.data_x.append(file_data)
+			self.data_y.append(self.sample[i,1])
